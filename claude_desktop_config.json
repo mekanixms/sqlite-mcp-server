@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "sqlite_mcp": {
+            "command": "C:\\path\\to\\python.exe",
+            "args": [
+            "C:\\path\\to\\sqlite-mcp-server.py"
+            ],
+            "env": {
+                "DB_PATH": "R:\\db.sqlite"
+            }
+        }
+    }
+}
