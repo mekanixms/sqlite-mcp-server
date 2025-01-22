@@ -116,10 +116,23 @@ class SQLiteMCP:
             """
             try:
                 with self.db.get_connection() as conn:
-                    df = pd.read_sql_query(sql, conn)
-                    return df.to_string()
+                    # For SELECT queries, use pandas
+                    if sql.strip().upper().startswith('SELECT'):
+                        df = pd.read_sql_query(sql, conn)
+                        if df.empty:
+                            return "Query executed successfully but returned no results."
+                        return df.to_string()
+                    else:
+                        # For non-SELECT queries (INSERT, UPDATE, DELETE, etc)
+                        cursor = conn.execute(sql)
+                        conn.commit()
+                        return f"Query executed successfully. Rows affected: {cursor.rowcount}"
+            except pd.io.sql.DatabaseError as e:
+                return f"Database error: {str(e)}"
+            except sqlite3.Error as e:
+                return f"SQLite error: {str(e)}"
             except Exception as e:
-                return f"Error executing query: {str(e)}"
+                return f"Error executing query: {str(e)}\nQuery type: {type(e)}"
 
         @self.mcp.tool()
         def update_data(table: str, sql: str) -> str:
