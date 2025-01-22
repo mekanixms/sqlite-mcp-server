@@ -1,5 +1,21 @@
-db.sqlite
-webstore-db.py
+# Ignore everything
+*
+
+# But don't ignore these files
+!.gitignore
+!sqlite-mcp-server.py
+!README.md
+!.env.example
 
 # Don't ignore directories, so we can whitelist files inside them
 !*/
+
+# But do ignore all files in any directory
+*/*
+
+# Except for these specific files in any directory depth
+!*/sqlite-mcp-server.py
+!*/README.md
+
+# Always ignore .env file
+.env

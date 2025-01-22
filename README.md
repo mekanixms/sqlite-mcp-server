@@ -49,17 +49,16 @@ mcp install sqlite_mcp.py --name "SQLite Explorer" --env DB_PATH=/path/to/your/d
 
 ## Usage
 
-Locate the claude_desktop_config.json file and add the following to the mcpServers section:
-change the paths to the correct ones for your system. DB_PATH is not readable from this config, yet, please  use DEFAULT_DB_PATH variable in the sqlite-mcp-server.py file.
+- Locate the claude_desktop_config.json file and add below to the mcpServers section
+- change the paths to the correct ones for your system.
+- Set database location in DB_PATH variable in the .env file.
+
 ```json
 "sqlite_mcp": {
     "command": "C:\\path\\to\\python.exe",
     "args": [
-    "C:\\path\\to\\sqlite-mcp-server.py"
-    ],
-    "env": {
-        "DB_PATH": "R:\\db.sqlite"
-    }
+    "C:\\path\\to\\sqlite-mcp\\server.py"
+    ]
 }
 ```
 

@@ -6,11 +6,14 @@ from dataclasses import dataclass
 import json
 import os
 import sys
+from dotenv import load_dotenv
 
-DEFAULT_DB_PATH = f"{os.getenv('HOMEPATH')}\\mcpDefaultSqlite.db"
+load_dotenv()  # This loads the environment variables from .env
+
+DEFAULT_DB_PATH = os.getenv('DB_PATH') or f"{os.getenv('HOMEPATH')}\\mcpDefaultSqlite.db"
 
 if sys.platform == "darwin":
-    DEFAULT_DB_PATH = f"~/mcpDefaultSqlite.db"
+    DEFAULT_DB_PATH = os.getenv('DB_PATH') or f"~/mcpDefaultSqlite.db"
 
 class DatabaseManager:
     def __init__(self, db_path: str):
