@@ -3,7 +3,7 @@
         "sqlite_mcp": {
             "command": "C:\\path\\to\\python.exe",
             "args": [
-            "C:\\path\\to\\sqlite-mcp-server.py"
+            "C:\\path\\to\\sqlite-mcp-directory\\server.py"
             ],
             "env": {
                 "DB_PATH": "R:\\db.sqlite"
