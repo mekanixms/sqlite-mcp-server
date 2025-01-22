@@ -1,0 +1,5 @@
+db.sqlite
+webstore-db.py
+
+# Don't ignore directories, so we can whitelist files inside them
+!*/
