@@ -1,3 +1,16 @@
+import sys
+import codecs
+import locale
+
+# Set up UTF-8 encoding for console output
+if sys.platform == "win32":
+    # Force UTF-8 output encoding on Windows
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+else:
+    # On Unix-like systems, ensure locale is properly set
+    locale.setlocale(locale.LC_ALL, '')
+
 from mcp.server.fastmcp import FastMCP, Context
 import sqlite3
 from typing import List, Dict, Any, Optional
