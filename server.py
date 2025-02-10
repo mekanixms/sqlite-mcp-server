@@ -78,6 +78,8 @@ class DatabaseManager:
             ]
 
 class SQLiteMCP:
+    attached_databases = {}
+    
     def __init__(self, db_path: str):
         if db_path is None:
             # db_path = ":memory:"
@@ -149,11 +151,19 @@ class SQLiteMCP:
                     # Use parameterized query for the database path
                     attach_sql = f"ATTACH DATABASE '{full_db_path}' AS {alias}"
                     conn.execute(attach_sql)
+                    self.attached_databases[alias] = full_db_path
                     return f"Successfully attached database '{full_db_path}' as {alias}"
             except sqlite3.Error as e:
                 return f"Error attaching database: {str(e)}"
             except Exception as e:
                 return f"Unexpected error: {str(e)}"
+            
+        @self.mcp.tool()
+        def list_attached_databases() -> str:
+            """
+            List all attached databases
+            """
+            return "Attached databases:\n" + "\n".join(f"- {alias}: {path}" for alias, path in self.attached_databases.items())
 
         @self.mcp.tool()
         def query(sql: str) -> str:
@@ -163,25 +173,25 @@ class SQLiteMCP:
             Args:
                 sql: SQL query to execute
             """
-            try:
-                with self.db.get_connection() as conn:
-                    # For SELECT queries, use pandas
-                    if sql.strip().upper().startswith('SELECT'):
-                        df = pd.read_sql_query(sql, conn)
-                        if df.empty:
-                            return "Query executed successfully but returned no results."
-                        return df.to_string()
-                    else:
-                        # For non-SELECT queries (INSERT, UPDATE, DELETE, etc)
-                        cursor = conn.execute(sql)
-                        conn.commit()
+            with self.db.get_connection() as conn:
+                # Reattach all previously attached databases
+                for alias, path in self.attached_databases.items():
+                    conn.execute(f"ATTACH DATABASE '{path}' AS {alias}")
+
+                # For SELECT queries, use pandas
+                if sql.strip().upper().startswith('SELECT'):
+                    df = pd.read_sql_query(sql, conn)
+                    if df.empty:
+                        return "Query executed successfully but returned no results."
+                    return df.to_string()
+                else:
+                    # For non-SELECT queries (INSERT, UPDATE, DELETE, etc)
+                    cursor = conn.execute(sql)
+                    conn.commit()
+                    if hasattr(cursor, 'rowcount'):
                         return f"Query executed successfully. Rows affected: {cursor.rowcount}"
-            except pd.io.sql.DatabaseError as e:
-                return f"Database error: {str(e)}"
-            except sqlite3.Error as e:
-                return f"SQLite error: {str(e)}"
-            except Exception as e:
-                return f"Error executing query: {str(e)}\nQuery type: {type(e)}"
+                    else:
+                        return "Query executed successfully. No rows affected."
 
         @self.mcp.tool()
         def update_data(table: str, sql: str) -> str:
