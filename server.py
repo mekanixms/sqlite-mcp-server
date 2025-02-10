@@ -166,6 +166,22 @@ class SQLiteMCP:
             return "Attached databases:\n" + "\n".join(f"- {alias}: {path}" for alias, path in self.attached_databases.items())
 
         @self.mcp.tool()
+        def create_database(db_name: str, alias: str) -> str:
+            """Create a new SQLite database with the given name in the same directory as the default database, and attach it using the specified alias."""
+            default_db_dir = os.path.dirname(DEFAULT_DB_PATH)
+            full_db_path = os.path.join(default_db_dir, db_name)
+            if os.path.exists(full_db_path):
+                return f"Database file '{db_name}' already exists in {default_db_dir}"
+            try:
+                # Create the new database (SQLite creates the file if it does not exist)
+                conn = sqlite3.connect(full_db_path)
+                conn.close()
+                self.attached_databases[alias] = full_db_path
+                return f"Created and attached new database '{full_db_path}' as alias '{alias}'."
+            except Exception as e:
+                return f"Error creating new database: {str(e)}"
+
+        @self.mcp.tool()
         def query(sql: str) -> str:
             """
             Execute a SQL query and return the results
