@@ -1,4 +1,6 @@
 import sys
+# sys.path.insert(0, './local_modules')
+
 import codecs
 import locale
 
@@ -119,6 +121,40 @@ class SQLiteMCP:
                 return f"Error retrieving schema: {str(e)}"
 
     def _setup_tools(self):
+        @self.mcp.tool()
+        def attach_database(alias: str, database_name: str) -> str:
+            """
+            Attach another SQLite database to the current connection with a specified alias.
+            The database file will be looked up in the same directory as the default database.
+            
+            Args:
+                alias: The alias name to use for the attached database
+                database_name: Name of the SQLite database file to attach (e.g., 'other.sqlite')
+            """
+            try:
+                # Get the directory of the default database
+                default_db_dir = os.path.dirname(DEFAULT_DB_PATH)
+                # Construct the full path for the database to attach
+                full_db_path = os.path.join(default_db_dir, database_name)
+                
+                # Check if the database file exists
+                if not os.path.exists(full_db_path):
+                    return f"Error: Database file '{database_name}' not found in {default_db_dir}"
+                
+                with self.db.get_connection() as conn:
+                    # Sanitize the alias to prevent SQL injection
+                    if not alias.isalnum():
+                        return "Error: Alias must contain only letters and numbers"
+                    
+                    # Use parameterized query for the database path
+                    attach_sql = f"ATTACH DATABASE '{full_db_path}' AS {alias}"
+                    conn.execute(attach_sql)
+                    return f"Successfully attached database '{full_db_path}' as {alias}"
+            except sqlite3.Error as e:
+                return f"Error attaching database: {str(e)}"
+            except Exception as e:
+                return f"Unexpected error: {str(e)}"
+
         @self.mcp.tool()
         def query(sql: str) -> str:
             """
